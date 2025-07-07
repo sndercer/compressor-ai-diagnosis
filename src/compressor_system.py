@@ -369,95 +369,95 @@ class CompressorDiagnosisSystem:
         }
 
     def create_ui(self):
-    """메인 UI 생성 (매뉴얼 및 연락처 통합)"""
-    st.set_page_config(
-        page_title="압축기 AI 진단 시스템",
-        page_icon="🏭",
-        layout="wide"
-    )
-    
-    # 헤더 (버전 정보 추가)
-    ai_badge = "🤖 AI 활성" if self.ai_enabled else "⚪ AI 비활성"
-    st.markdown(f"""
-    <div style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); 
-                padding: 2rem; border-radius: 15px; color: white; text-align: center; margin-bottom: 2rem;">
-        <h1>🏭 압축기 AI 진단 시스템</h1>
-        <h3>머신러닝 기반 실시간 진단 솔루션</h3>
-        <p style="margin: 0; opacity: 0.8;">{ai_badge} | v1.0.0 | 노트북 최적화</p>
-        <p style="margin: 0; opacity: 0.7; font-size: 0.9em;">
-            💡 처음 사용하시나요? '📖 사용법' 탭을 먼저 확인해보세요!
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # 사이드바 (업데이트된 정보)
-    with st.sidebar:
-        st.header("🎛️ 시스템 상태")
+        """메인 UI 생성 (매뉴얼 및 연락처 통합)"""
+        st.set_page_config(
+            page_title="압축기 AI 진단 시스템",
+            page_icon="🏭",
+            layout="wide"
+        )
         
-        stats = self.get_system_stats()
+        # 헤더 (버전 정보 추가)
+        ai_badge = "🤖 AI 활성" if self.ai_enabled else "⚪ AI 비활성"
         st.markdown(f"""
-        **📊 시스템 통계**
-        - 총 파일: {stats['total_files']}개
-        - 라벨 데이터: {stats['total_labels']}개
-        - AI 예측: {stats['total_predictions']}개
-        - 고객 수: {stats['total_customers']}개
-        """)
+        <div style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); 
+                    padding: 2rem; border-radius: 15px; color: white; text-align: center; margin-bottom: 2rem;">
+            <h1>🏭 압축기 AI 진단 시스템</h1>
+            <h3>머신러닝 기반 실시간 진단 솔루션</h3>
+            <p style="margin: 0; opacity: 0.8;">{ai_badge} | v1.0.0 | 노트북 최적화</p>
+            <p style="margin: 0; opacity: 0.7; font-size: 0.9em;">
+                💡 처음 사용하시나요? '📖 사용법' 탭을 먼저 확인해보세요!
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        # AI 모델 상태
-        st.header("🤖 AI 모델 상태")
-        if self.ai_enabled:
-            model_info = self.ai_manager.get_model_info()['lightweight']
+        # 사이드바 (업데이트된 정보)
+        with st.sidebar:
+            st.header("🎛️ 시스템 상태")
             
-            st.success("✅ 경량 AI 활성")
+            stats = self.get_system_stats()
             st.markdown(f"""
-            **모델 정보:**
-            - 상태: {model_info['status']}
-            - 정확도: {model_info['accuracy']}
-            - 속도: {model_info['speed']}
+            **📊 시스템 통계**
+            - 총 파일: {stats['total_files']}개
+            - 라벨 데이터: {stats['total_labels']}개
+            - AI 예측: {stats['total_predictions']}개
+            - 고객 수: {stats['total_customers']}개
             """)
-        else:
-            st.error("❌ AI 모델 비활성")
+            
+            # AI 모델 상태
+            st.header("🤖 AI 모델 상태")
+            if self.ai_enabled:
+                model_info = self.ai_manager.get_model_info()['lightweight']
+                
+                st.success("✅ 경량 AI 활성")
+                st.markdown(f"""
+                **모델 정보:**
+                - 상태: {model_info['status']}
+                - 정확도: {model_info['accuracy']}
+                - 속도: {model_info['speed']}
+                """)
+            else:
+                st.error("❌ AI 모델 비활성")
+            
+            # 빠른 링크
+            st.header("🔗 빠른 링크")
+            st.markdown("""
+            - 📖 [사용법 가이드](#사용법)
+            - 📞 [연락처 & 후원](#연락처)
+            - 🐛 [버그 신고](https://github.com/username/compressor-ai-diagnosis/issues)
+            - 💡 [기능 제안](https://github.com/username/compressor-ai-diagnosis/discussions)
+            """)
         
-        # 빠른 링크
-        st.header("🔗 빠른 링크")
-        st.markdown("""
-        - 📖 [사용법 가이드](#사용법)
-        - 📞 [연락처 & 후원](#연락처)
-        - 🐛 [버그 신고](https://github.com/username/compressor-ai-diagnosis/issues)
-        - 💡 [기능 제안](https://github.com/username/compressor-ai-diagnosis/discussions)
-        """)
-    
-    # 메인 탭 (새 탭들 추가)
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-        "📁 파일 관리", 
-        "🔬 분석", 
-        "🤖 AI 학습",
-        "📊 대시보드",
-        "📖 사용법",
-        "📞 연락처 & 후원",
-        "⚙️ 설정"
-    ])
-    
-    with tab1:
-        self.file_management_tab()
-    
-    with tab2:
-        self.analysis_tab()
+        # 메인 탭 (새 탭들 추가)
+        tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+            "📁 파일 관리", 
+            "🔬 분석", 
+            "🤖 AI 학습",
+            "📊 대시보드",
+            "📖 사용법",
+            "📞 연락처 & 후원",
+            "⚙️ 설정"
+        ])
         
-    with tab3:
-        self.ai_learning_tab()
+        with tab1:
+            self.file_management_tab()
         
-    with tab4:
-        self.dashboard_tab()
-        
-    with tab5:
-        self.user_manual_tab()  # 새로 추가
-        
-    with tab6:
-        self.contact_support_tab()  # 새로 추가
-        
-    with tab7:
-        self.settings_tab()
+        with tab2:
+            self.analysis_tab()
+            
+        with tab3:
+            self.ai_learning_tab()
+            
+        with tab4:
+            self.dashboard_tab()
+            
+        with tab5:
+            self.user_manual_tab()  # 새로 추가
+            
+        with tab6:
+            self.contact_support_tab()  # 새로 추가
+            
+        with tab7:
+            self.settings_tab()
 
     def file_management_tab(self):
         """파일 관리 탭"""
@@ -960,294 +960,311 @@ class CompressorDiagnosisSystem:
             self.save_system_settings(settings)
             st.success("✅ 설정 저장 완료!")
 
-
     def user_manual_tab(self):
-    """사용자 매뉴얼 탭"""
-    st.header("📖 사용자 매뉴얼")
-    
-    # 목차
-    st.markdown("""
-    **📋 목차**
-    - [빠른 시작](#빠른-시작)
-    - [진단 결과 해석](#진단-결과-해석)
-    - [오디오 파일 가이드](#오디오-파일-가이드)
-    - [연구 참여 방법](#연구-참여-방법)
-    - [문제 해결](#문제-해결)
-    """)
-    
-    # 빠른 시작 가이드
-    with st.expander("🚀 빠른 시작 가이드", expanded=True):
+        """사용자 매뉴얼 탭"""
+        st.header("📖 사용자 매뉴얼")
+        
+        # 목차
         st.markdown("""
-        ### 1단계: 고객 정보 입력 (선택사항)
-        ```
-        📁 파일 관리 탭 → 고객 정보 섹션
-        - 고객 ID: CUST_001
-        - 회사명: ○○냉동
-        - 담당자: 홍길동
-        - 장비 ID: COMP_001
-        ```
-        
-        ### 2단계: 오디오 파일 업로드
-        1. **"파일 업로드"** 영역으로 이동
-        2. **압축기 소리 파일** 선택 (`.wav`, `.mp3` 지원)
-        3. **옵션 설정**:
-           - ✅ 자동 분석
-           - ✅ AI 예측
-        4. **"🚀 파일 처리"** 버튼 클릭
-        
-        ### 3단계: AI 진단 결과 확인
-        ```
-        🔬 분석 탭 → 파일 선택 → 🤖 AI 분석
-        ```
+        **📋 목차**
+        - [빠른 시작](#빠른-시작)
+        - [진단 결과 해석](#진단-결과-해석)
+        - [오디오 파일 가이드](#오디오-파일-가이드)
+        - [연구 참여 방법](#연구-참여-방법)
+        - [문제 해결](#문제-해결)
         """)
-    
-    # 진단 결과 해석
-    with st.expander("📊 진단 결과 해석"):
-        col1, col2 = st.columns(2)
         
-        with col1:
+        # 빠른 시작 가이드
+        with st.expander("🚀 빠른 시작 가이드", expanded=True):
             st.markdown("""
-            ### 🎯 AI 진단 결과
+            ### 1단계: 고객 정보 입력 (선택사항)
             ```
-            🟢 정상 압축기 (신뢰도: 85%)     ← 높은 신뢰도
-            🟡 압축기 과부하 (신뢰도: 65%)   ← 중간 신뢰도
-            🔴 베어링 마모 (신뢰도: 45%)     ← 낮은 신뢰도
+            📁 파일 관리 탭 → 고객 정보 섹션
+            - 고객 ID: CUST_001
+            - 회사명: ○○냉동
+            - 담당자: 홍길동
+            - 장비 ID: COMP_001
             ```
             
-            ### 📈 신뢰도 가이드
-            - **80% 이상**: 높은 신뢰도, 진단 결과 신뢰 가능
-            - **60-80%**: 중간 신뢰도, 추가 검토 권장  
-            - **60% 미만**: 낮은 신뢰도, 전문가 확인 필요
+            ### 2단계: 오디오 파일 업로드
+            1. **"파일 업로드"** 영역으로 이동
+            2. **압축기 소리 파일** 선택 (`.wav`, `.mp3` 지원)
+            3. **옵션 설정**:
+               - ✅ 자동 분석
+               - ✅ AI 예측
+            4. **"🚀 파일 처리"** 버튼 클릭
+            
+            ### 3단계: AI 진단 결과 확인
+            ```
+            🔬 분석 탭 → 파일 선택 → 🤖 AI 분석
+            ```
             """)
         
-        with col2:
+        # 진단 결과 해석
+        with st.expander("📊 진단 결과 해석"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("""
+                ### 🎯 AI 진단 결과
+                ```
+                🟢 정상 압축기 (신뢰도: 85%)     ← 높은 신뢰도
+                🟡 압축기 과부하 (신뢰도: 65%)   ← 중간 신뢰도
+                🔴 베어링 마모 (신뢰도: 45%)     ← 낮은 신뢰도
+                ```
+                
+                ### 📈 신뢰도 가이드
+                - **80% 이상**: 높은 신뢰도, 진단 결과 신뢰 가능
+                - **60-80%**: 중간 신뢰도, 추가 검토 권장  
+                - **60% 미만**: 낮은 신뢰도, 전문가 확인 필요
+                """)
+            
+            with col2:
+                st.markdown("""
+                ### 🔍 주파수 분석 차트
+                - **저주파 (10-100Hz)**: 기계적 진동
+                - **압축기 (100-500Hz)**: 압축기 기본 주파수
+                - **모터 (500-1500Hz)**: 모터 회전 주파수
+                - **팬 (1.5-3kHz)**: 팬 회전 및 공기 흐름
+                - **냉매 (3-8kHz)**: 냉매 흐름 소음
+                - **고주파 (8kHz+)**: 전기 노이즈, 고주파 진동
+                """)
+        
+        # 오디오 파일 가이드
+        with st.expander("🎵 오디오 파일 가이드"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("""
+                ### ✅ 권장 사양
+                - **포맷**: WAV 또는 MP3
+                - **길이**: 3-10초 (최적: 5초)
+                - **샘플링 레이트**: 16kHz 이상 (권장: 44.1kHz)
+                - **파일 크기**: 100MB 이하
+                - **환경**: 배경 소음 최소화
+                
+                ### 📱 녹음 방법
+                1. **스마트폰 녹음 앱** 사용
+                2. **압축기에서 1-2미터** 거리 유지
+                3. **다양한 각도**에서 여러 번 녹음
+                4. **동작 상태**별로 구분 녹음
+                """)
+            
+            with col2:
+                st.markdown("""
+                ### ⚠️ 주의사항
+                - 배경 소음 최소화
+                - 바람 소리 제거
+                - 동일한 환경에서 녹음
+                - 개인정보 포함된 대화 제거
+                
+                ### 🏷️ 라벨 분류
+                #### 압축기 상태
+                - `정상 동작` / `과부하` / `베어링 마모` / `밸브 고장`
+                
+                #### 팬 상태  
+                - `정상 동작` / `불균형` / `베어링 마모`
+                
+                #### 냉매 상태
+                - `정상 흐름` / `부족` / `누출`
+                """)
+        
+        # 연구 참여 방법
+        with st.expander("🔬 연구 참여 방법"):
             st.markdown("""
-            ### 🔍 주파수 분석 차트
-            - **저주파 (10-100Hz)**: 기계적 진동
-            - **압축기 (100-500Hz)**: 압축기 기본 주파수
-            - **모터 (500-1500Hz)**: 모터 회전 주파수
-            - **팬 (1.5-3kHz)**: 팬 회전 및 공기 흐름
-            - **냉매 (3-8kHz)**: 냉매 흐름 소음
-            - **고주파 (8kHz+)**: 전기 노이즈, 고주파 진동
+            ### 🎯 데이터 기여 방법
+            1. **정확한 라벨링**: 압축기 상태를 정확히 기록
+            2. **다양한 조건**: 다양한 환경과 상태의 데이터 제공
+            3. **메타데이터**: 장비 정보, 환경 조건 상세 기록
+            
+            ### 🏆 기여자 혜택
+            - GitHub 프로필에 기여자 배지
+            - 논문 공동 저자 기회
+            - 월간 연구 진행 상황 공유
+            - 연구팀과의 정기 미팅 참여
             """)
-    
-    # 오디오 파일 가이드
-    with st.expander("🎵 오디오 파일 가이드"):
-        col1, col2 = st.columns(2)
         
-        with col1:
+        # FAQ
+        with st.expander("❓ 자주 묻는 질문 (FAQ)"):
             st.markdown("""
-            ### ✅ 권장 사양
-            - **포맷**: WAV 또는 MP3
-            - **길이**: 3-10초 (최적: 5초)
-            - **샘플링 레이트**: 16kHz 이상 (권장: 44.1kHz)
-            - **파일 크기**: 100MB 이하
-            - **환경**: 배경 소음 최소화
+            ### Q: 파일 업로드가 안 돼요
+            **A**: 파일 형식(`.wav`, `.mp3`)과 크기(100MB 이하)를 확인하세요.
             
-            ### 📱 녹음 방법
-            1. **스마트폰 녹음 앱** 사용
-            2. **압축기에서 1-2미터** 거리 유지
-            3. **다양한 각도**에서 여러 번 녹음
-            4. **동작 상태**별로 구분 녹음
+            ### Q: AI 진단 결과가 부정확해요
+            **A**: 현재 연구 단계로 정확도가 75-85%입니다. 더 많은 데이터로 개선 중입니다.
+            
+            ### Q: 모바일에서도 사용 가능한가요?
+            **A**: 네! 모든 기기의 웹 브라우저에서 사용 가능합니다.
+            
+            ### Q: 데이터가 안전한가요?
+            **A**: 클라우드 데이터베이스에 암호화되어 저장되며, 연구 목적으로만 사용됩니다.
+            
+            ### Q: 오프라인에서도 사용할 수 있나요?
+            **A**: 현재는 인터넷 연결이 필요합니다. 오프라인 버전은 개발 예정입니다.
             """)
-        
-        with col2:
-            st.markdown("""
-            ### ⚠️ 주의사항
-            - 배경 소음 최소화
-            - 바람 소리 제거
-            - 동일한 환경에서 녹음
-            - 개인정보 포함된 대화 제거
-            
-            ### 🏷️ 라벨 분류
-            #### 압축기 상태
-            - `정상 동작` / `과부하` / `베어링 마모` / `밸브 고장`
-            
-            #### 팬 상태  
-            - `정상 동작` / `불균형` / `베어링 마모`
-            
-            #### 냉매 상태
-            - `정상 흐름` / `부족` / `누출`
-            """)
-    
-    # 연구 참여 방법
-    with st.expander("🔬 연구 참여 방법"):
-        st.markdown("""
-        ### 🎯 데이터 기여 방법
-        1. **정확한 라벨링**: 압축기 상태를 정확히 기록
-        2. **다양한 조건**: 다양한 환경과 상태의 데이터 제공
-        3. **메타데이터**: 장비 정보, 환경 조건 상세 기록
-        
-        ### 🏆 기여자 혜택
-        - GitHub 프로필에 기여자 배지
-        - 논문 공동 저자 기회
-        - 월간 연구 진행 상황 공유
-        - 연구팀과의 정기 미팅 참여
-        """)
-    
-    # FAQ
-    with st.expander("❓ 자주 묻는 질문 (FAQ)"):
-        st.markdown("""
-        ### Q: 파일 업로드가 안 돼요
-        **A**: 파일 형식(`.wav`, `.mp3`)과 크기(100MB 이하)를 확인하세요.
-        
-        ### Q: AI 진단 결과가 부정확해요
-        **A**: 현재 연구 단계로 정확도가 75-85%입니다. 더 많은 데이터로 개선 중입니다.
-        
-        ### Q: 모바일에서도 사용 가능한가요?
-        **A**: 네! 모든 기기의 웹 브라우저에서 사용 가능합니다.
-        
-        ### Q: 데이터가 안전한가요?
-        **A**: 클라우드 데이터베이스에 암호화되어 저장되며, 연구 목적으로만 사용됩니다.
-        
-        ### Q: 오프라인에서도 사용할 수 있나요?
-        **A**: 현재는 인터넷 연결이 필요합니다. 오프라인 버전은 개발 예정입니다.
-        """)
-
-# 새로 추가할 메서드 2: 연락처 및 후원 탭
 
     def contact_support_tab(self):
-         """연락처 및 후원 탭"""
-    st.header("📞 연락처 및 후원")
-    
-    # 빠른 연락
-    col1, col2 = st.columns(2)
-    
-    with col1:
+        """연락처 및 후원 탭"""
+        st.header("📞 연락처 및 후원")
+        
+        # 빠른 연락
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("""
+            ### 💬 빠른 문의
+            - **📧 이메일**: sndercer@gmail.com
+            - **💬 카카오톡**: https://open.kakao.com/me/signalcraft
+            - **🐛 버그 신고**: [GitHub Issues](https://github.com/username/compressor-ai-diagnosis/issues)
+            - **💡 기능 제안**: [GitHub Discussions](https://github.com/username/compressor-ai-diagnosis/discussions)
+            """)
+        
+        with col2:
+            st.markdown("""
+            ### 🔬 연구 협력
+            - **학술 협력**: sndercer@gmail.com
+            - **기업 파트너십**: sndercer@gmail.com  
+            - **데이터 기여**: sndercer@gmail.com
+            - **미디어 문의**: sndercer@gmail.com
+            """)
+        
+        # 팀 소개
+        st.subheader("👥 개발팀")
+        
+        team_col1, team_col2, team_col3 = st.columns(3)
+        
+        with team_col1:
+            st.markdown("""
+            **🚀 프로젝트 리더**
+            - **이름**: 김선범
+            - **소속**: 한국해양대/시그널크래프트 대표
+            - **전문분야**: AI 엔지니어링
+            - **연락**: sndercer@gmail.com
+            """)
+        
+        with team_col2:
+            st.markdown("""
+            **🤖 AI 개발팀**
+            - **이름**: [실제 이름]
+            - **소속**: [대학교/회사]
+            - **전문분야**: 딥러닝, 음향분석
+            - **연락**: ai@compressor-ai.org
+            """)
+        
+        with team_col3:
+            st.markdown("""
+            **🔧 시스템 엔지니어**
+            - **이름**: [실제 이름]
+            - **소속**: [대학교/회사]
+            - **전문분야**: 클라우드, DevOps
+            - **연락**: system@compressor-ai.org
+            """)
+        
+        # 후원 섹션
+        st.subheader("💰 프로젝트 후원")
+        
         st.markdown("""
-        ### 💬 빠른 문의
-        - **📧 이메일**: sndercer@gmail.com
-        - **💬 카카오톡**: https://open.kakao.com/me/signalcraft
-        - **🐛 버그 신고**: [GitHub Issues](https://github.com/username/compressor-ai-diagnosis/issues)
-        - **💡 기능 제안**: [GitHub Discussions](https://github.com/username/compressor-ai-diagnosis/discussions)
+        ### 🎯 후원 목적
+        - **서버 운영비**: 클라우드 데이터베이스 및 웹 호스팅
+        - **연구 개발**: 고성능 AI 모델 학습을 위한 GPU 자원
+        - **데이터 수집**: 고품질 압축기 데이터 확보
+        - **팀 운영**: 연구진 생활비 및 연구 활동비
         """)
-    
-    with col2:
-        st.markdown("""
-        ### 🔬 연구 협력
-        - **학술 협력**: sndercer@gmail.com
-        - **기업 파트너십**: sndercer@gmail.com  
-        - **데이터 기여**: sndercer@gmail.com
-        - **미디어 문의**: sndercer@gmail.com
-        """)
-    
-    # 팀 소개
-    st.subheader("👥 개발팀")
-    
-    team_col1, team_col2, team_col3 = st.columns(3)
-    
-    with team_col1:
-        st.markdown("""
-        **🚀 프로젝트 리더**
-        - **이름**: 김선범
-        - **소속**: 한국해양대/시그널크래프트 대표
-        - **전문분야**: AI 엔지니어링
-        - **연락**: sndercer@gmail.com
-        """)
-    
-    with team_col2:
-        st.markdown("""
-        **🤖 AI 개발팀**
-        - **이름**: [실제 이름]
-        - **소속**: [대학교/회사]
-        - **전문분야**: 딥러닝, 음향분석
-        - **연락**: ai@compressor-ai.org
-        """)
-    
-    with team_col3:
-        st.markdown("""
-        **🔧 시스템 엔지니어**
-        - **이름**: [실제 이름]
-        - **소속**: [대학교/회사]
-        - **전문분야**: 클라우드, DevOps
-        - **연락**: system@compressor-ai.org
-        """)
-    
-    # 후원 섹션
-    st.subheader("💰 프로젝트 후원")
-    
-    st.markdown("""
-    ### 🎯 후원 목적
-    - **서버 운영비**: 클라우드 데이터베이스 및 웹 호스팅
-    - **연구 개발**: 고성능 AI 모델 학습을 위한 GPU 자원
-    - **데이터 수집**: 고품질 압축기 데이터 확보
-    - **팀 운영**: 연구진 생활비 및 연구 활동비
-    """)
-    
-    # 후원 방법
-    sponsor_col1, sponsor_col2 = st.columns(2)
-    
-    with sponsor_col1:
-        st.markdown("""
-        ### 🌟 정기 후원 (권장)
-        - **GitHub Sponsors**: [후원 링크](https://github.com/sponsors/sndercer)
+        
+        # 후원 방법
+        sponsor_col1, sponsor_col2 = st.columns(2)
+        
+        with sponsor_col1:
+            st.markdown("""
+            ### 🌟 정기 후원 (권장)
+            - **GitHub Sponsors**: [후원 링크](https://github.com/sponsors/sndercer)
 
-        ### 🏦 일회성 후원 (국내)
-        ```
-        은행: 국민은행
-        계좌번호: 101401-04-197042
-        예금주: 김선범
-        용도: 압축기AI연구
-        ```
-        """)
-    
-   
-    # 커뮤니티
-    st.subheader("🔗 커뮤니티 & 소셜")
-    
-    community_col1, community_col2, community_col3 = st.columns(3)
-    
-    with community_col1:
-        st.markdown("""
-        **🌐 공식 채널**
-        - [GitHub 저장소](https://github.com/sndercer/compressor-ai-diagnosis)
-   
-    with community_col2:
-        st.markdown("""
-        **💬 소셜 미디어**
+            ### 🏦 일회성 후원 (국내)
+            ```
+            은행: 국민은행
+            계좌번호: 101401-04-197042
+            예금주: 김선범
+            용도: 압축기AI연구
+            ```
+            """)
+        
+        with sponsor_col2:
+            st.markdown("""
+            ### 💳 해외 후원
+            - **PayPal**: [paypal.me/signalcraft](https://paypal.me/signalcraft)
+            - **Crypto**: 지원 예정
 
-        - [LinkedIn 페이지]https://www.linkedin.com/in/%EC%84%A0%EB%B2%94-%EA%B9%80-247b5025a/
-        - [유튜브 채널]www.youtube.com/@marinmate-w9h
-        """)
-    
-
-    # 기여 방법
-    with st.expander("🚀 프로젝트 기여 방법"):
-        st.markdown("""
-        ### 🌟 다양한 기여 방법
+            ### 🎁 후원자 혜택
+            - 월간 개발 진행 상황 리포트
+            - 베타 기능 우선 체험
+            - 후원자 전용 Discord 채널
+            - 연례 후원자 감사 이벤트
+            """)
+       
+        # 커뮤니티
+        st.subheader("🔗 커뮤니티 & 소셜")
         
-        **💻 코드 기여**
-        - GitHub에서 이슈 해결
-        - 새로운 기능 개발
-        - 버그 수정 및 최적화
+        community_col1, community_col2, community_col3 = st.columns(3)
         
-        **📊 데이터 기여**
-        - 고품질 압축기 오디오 제공
-        - 전문가 라벨링 참여
-        - 데이터 검증 및 정제
+        with community_col1:
+            st.markdown("""
+            **🌐 공식 채널**
+            - [GitHub 저장소](https://github.com/sndercer/compressor-ai-diagnosis)
+            - [GitHub Pages](https://sndercer.github.io/compressor-ai-diagnosis)
+            """)
+       
+        with community_col2:
+            st.markdown("""
+            **💬 소셜 미디어**
+            - [LinkedIn 페이지](https://www.linkedin.com/in/%EC%84%A0%EB%B2%94-%EA%B9%80-247b5025a/)
+            - [유튜브 채널](https://www.youtube.com/@marinmate-w9h)
+            """)
         
-        **📚 문서 기여**
-        - 사용법 개선
-        - 번역 작업
-        - 튜토리얼 제작
+        with community_col3:
+            st.markdown("""
+            **📧 뉴스레터**
+            - 월간 연구 동향
+            - 기술 업데이트
+            - 커뮤니티 소식
+            """)
         
-        **📢 홍보 기여**
-        - 소셜미디어 공유
-        - 블로그 포스팅
-        - 컨퍼런스 발표
+        # 기여 방법
+        with st.expander("🚀 프로젝트 기여 방법"):
+            st.markdown("""
+            ### 🌟 다양한 기여 방법
+            
+            **💻 코드 기여**
+            - GitHub에서 이슈 해결
+            - 새로운 기능 개발
+            - 버그 수정 및 최적화
+            
+            **📊 데이터 기여**
+            - 고품질 압축기 오디오 제공
+            - 전문가 라벨링 참여
+            - 데이터 검증 및 정제
+            
+            **📚 문서 기여**
+            - 사용법 개선
+            - 번역 작업
+            - 튜토리얼 제작
+            
+            **📢 홍보 기여**
+            - 소셜미디어 공유
+            - 블로그 포스팅
+            - 컨퍼런스 발표
+            
+            ### 🏆 기여자 인정
+            - Hall of Fame에 이름 등재
+            - 기여도별 티어 시스템 (Bronze, Silver, Gold, Platinum)
+            - 연례 기여자 시상식
+            """)
         
-        ### 🏆 기여자 인정
-        - Hall of Fame에 이름 등재
-        - 기여도별 티어 시스템 (Bronze, Silver, Gold, Platinum)
-        - 연례 기여자 시상식
-        """)
-    
-    # 연락 응답 시간
-    st.info("📞 **문의 응답 시간**: 평일 24시간 이내, 주말 48시간 이내")
-    
-    # 마지막 업데이트 정보
-    st.markdown("---")
-    st.markdown("**📅 마지막 업데이트**: 2024년 7월 7일 | **📖 버전**: v1.0.0")
+        # 연락 응답 시간
+        st.info("📞 **문의 응답 시간**: 평일 24시간 이내, 주말 48시간 이내")
+        
+        # 마지막 업데이트 정보
+        st.markdown("---")
+        st.markdown("**📅 마지막 업데이트**: 2024년 7월 7일 | **📖 버전**: v1.0.0")
 
     # 유틸리티 메서드들
     def get_system_stats(self):
