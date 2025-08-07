@@ -1,0 +1,46 @@
+# 압축기 진단 시스템 - Docker Compose 설정
+version: '3.8'
+
+services:
+  compressor-diagnosis:
+    build: .
+    ports:
+      - "8000:8000"  # FastAPI 백엔드
+      - "8501:8501"  # Streamlit 프론트엔드
+    environment:
+      - KAKAO_CLIENT_ID=${KAKAO_CLIENT_ID}
+      - KAKAO_CLIENT_SECRET=${KAKAO_CLIENT_SECRET}
+      - KAKAO_REDIRECT_URI=${KAKAO_REDIRECT_URI:-http://localhost:8501/auth/kakao/callback}
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+    volumes:
+      - ./uploads:/app/uploads
+      - ./models:/app/models
+      - ./backups:/app/backups
+      - ./compressor_system.db:/app/compressor_system.db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 개발용 데이터베이스 (선택적)
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: compressor_diagnosis
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    profiles:
+      - production  # 프로덕션 프로파일에서만 실행
+
+volumes:
+  postgres_data:
+
+
