@@ -57,6 +57,11 @@ black_*
 simple_*
 direct_*
 
+# Generated reports (keep only for local testing)
+진단리포트_*
+*_report.html
+*_report.pdf
+
 # Backup files
 backup_*
 *.bak

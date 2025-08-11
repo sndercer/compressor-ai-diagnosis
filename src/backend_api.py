@@ -619,6 +619,196 @@ async def get_customers(user_id: str = Depends(verify_token)):
     finally:
         conn.close()
 
+# 현장 진단 관련 엔드포인트
+@app.post("/field-diagnosis/analyze")
+async def field_diagnosis_analyze(
+    audio_file: UploadFile = File(...),
+    customer_name: str = Form(...),
+    equipment_type: str = Form(...),
+    equipment_id: str = Form(...),
+    technician_name: str = Form(...)
+):
+    """현장 진단용 오디오 분석"""
+    try:
+        # 파일 저장
+        upload_dir = "field_uploads"
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"{customer_name}_{equipment_id}_{timestamp}.wav"
+        file_path = os.path.join(upload_dir, filename)
+        
+        with open(file_path, "wb") as buffer:
+            content = await audio_file.read()
+            buffer.write(content)
+        
+        # AI 분석
+        audio, sr = librosa.load(file_path, sr=22050)
+        start_time = datetime.now()
+        diagnosis, confidence = ai_model.predict(audio, sr)
+        processing_time = (datetime.now() - start_time).total_seconds()
+        
+        # 결과 저장 (현장 진단 DB)
+        conn = sqlite3.connect('field_diagnosis.db')
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS field_diagnoses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                customer_name TEXT NOT NULL,
+                equipment_type TEXT NOT NULL,
+                equipment_id TEXT NOT NULL,
+                diagnosis_result TEXT,
+                confidence REAL,
+                audio_filename TEXT,
+                technician_name TEXT,
+                diagnosis_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                processing_time REAL
+            )
+        ''')
+        
+        cursor.execute('''
+            INSERT INTO field_diagnoses 
+            (customer_name, equipment_type, equipment_id, diagnosis_result, 
+             confidence, audio_filename, technician_name, processing_time)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (customer_name, equipment_type, equipment_id, diagnosis, confidence, 
+              filename, technician_name, processing_time))
+        
+        # 생성된 diagnosis_id 가져오기
+        diagnosis_id = cursor.lastrowid
+        
+        conn.commit()
+        conn.close()
+        
+        # 상태 판정
+        if confidence >= 0.9:
+            if "정상" in diagnosis:
+                status = "normal"
+            else:
+                status = "danger"
+        elif confidence >= 0.7:
+            status = "caution"
+        else:
+            status = "normal"  # 불확실한 경우 정상으로 처리
+        
+        return {
+            "diagnosis": diagnosis,
+            "confidence": confidence,
+            "status": status,
+            "processing_time": processing_time,
+            "recommendations": get_recommendations(diagnosis),
+            "filename": filename,
+            "diagnosis_id": diagnosis_id
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"현장 진단 실패: {str(e)}")
+
+@app.post("/field-diagnosis/generate-report")
+async def generate_field_report(
+    diagnosis_id: int = Form(...),
+    report_format: str = Form("pdf")  # pdf, json
+):
+    """현장 진단 리포트 생성"""
+    try:
+        # 진단 데이터 조회
+        conn = sqlite3.connect('field_diagnosis.db')
+        cursor = conn.cursor()
+        
+        cursor.execute("SELECT * FROM field_diagnoses WHERE id = ?", (diagnosis_id,))
+        diagnosis_data = cursor.fetchone()
+        conn.close()
+        
+        if not diagnosis_data:
+            raise HTTPException(status_code=404, detail="진단 데이터를 찾을 수 없습니다.")
+        
+        # 데이터 변환
+        diagnosis_dict = {
+            'customer_name': diagnosis_data[1],
+            'equipment_type': diagnosis_data[2], 
+            'equipment_id': diagnosis_data[3],
+            'diagnosis': diagnosis_data[4],
+            'confidence': diagnosis_data[5],
+            'technician_name': diagnosis_data[7],
+            'diagnosis_time': diagnosis_data[8],
+            'processing_time': diagnosis_data[9]
+        }
+        
+        if report_format == "pdf":
+            # PDF 리포트 생성
+            from pdf_report_generator import PDFReportGenerator
+            generator = PDFReportGenerator()
+            
+            report_filename = f"field_report_{diagnosis_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+            report_path = os.path.join("reports", report_filename)
+            os.makedirs("reports", exist_ok=True)
+            
+            generator.create_diagnosis_report(diagnosis_dict, report_path)
+            generator.cleanup_temp_files()
+            
+            return {
+                "success": True,
+                "pdf_path": report_path,
+                "report_path": report_path,
+                "report_filename": report_filename,
+                "format": "pdf",
+                "message": "PDF 리포트 생성 완료"
+            }
+        else:
+            # JSON 형태로 반환
+            return {
+                "diagnosis_data": diagnosis_dict,
+                "format": "json"
+            }
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"리포트 생성 실패: {str(e)}")
+
+@app.get("/field-diagnosis/history")
+async def get_field_diagnosis_history(
+    customer_name: str = None,
+    limit: int = 50
+):
+    """현장 진단 이력 조회"""
+    try:
+        conn = sqlite3.connect('field_diagnosis.db')
+        cursor = conn.cursor()
+        
+        if customer_name:
+            cursor.execute("""
+                SELECT * FROM field_diagnoses 
+                WHERE customer_name = ? 
+                ORDER BY diagnosis_time DESC 
+                LIMIT ?
+            """, (customer_name, limit))
+        else:
+            cursor.execute("""
+                SELECT * FROM field_diagnoses 
+                ORDER BY diagnosis_time DESC 
+                LIMIT ?
+            """, (limit,))
+        
+        history = []
+        for row in cursor.fetchall():
+            history.append({
+                "id": row[0],
+                "customer_name": row[1],
+                "equipment_type": row[2],
+                "equipment_id": row[3],
+                "diagnosis_result": row[4],
+                "confidence": row[5],
+                "technician_name": row[7],
+                "diagnosis_time": row[8],
+                "processing_time": row[9]
+            })
+        
+        conn.close()
+        return {"history": history}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"이력 조회 실패: {str(e)}")
+
 @app.get("/stats/system")
 async def get_system_stats(user_id: str = Depends(verify_token)):
     """시스템 통계 조회 (관리자용)"""
