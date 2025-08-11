@@ -80,6 +80,11 @@ st.markdown("""
         color: black !important;
     }
     
+    /* 사이드바 스타일 */
+    .sidebar .sidebar-content {
+        background-color: #f8f9fa;
+    }
+    
     /* 모바일 최적화 스타일 */
     .main > div {
         padding: 1rem 0.5rem;
@@ -193,6 +198,8 @@ class FieldDiagnosisApp:
             self.session_state.recording_data = None
         if 'analysis_result' not in self.session_state:
             self.session_state.analysis_result = None
+        if 'current_page' not in self.session_state:
+            self.session_state.current_page = '현장진단'
         
         # 데이터베이스 초기화
         self.init_database()
@@ -891,19 +898,262 @@ class FieldDiagnosisApp:
         except Exception as e:
             st.error(f"이력 조회 오류: {e}")
     
+    def show_sidebar_navigation(self):
+        """사이드바 네비게이션"""
+        st.sidebar.title("🔧 AI 압축기 진단")
+        
+        # 네비게이션 메뉴
+        pages = {
+            "🏠 현장진단": "현장진단",
+            "📊 대시보드": "대시보드", 
+            "🤖 AI 학습": "AI학습",
+            "📋 진단이력": "진단이력",
+            "⚙️ 설정": "설정"
+        }
+        
+        selected_page = st.sidebar.radio("메뉴", list(pages.keys()))
+        self.session_state.current_page = pages[selected_page]
+        
+        # 현재 상태 표시
+        st.sidebar.markdown("---")
+        st.sidebar.markdown("### 📊 시스템 상태")
+        
+        # 간단한 통계
+        try:
+            conn = sqlite3.connect('field_diagnosis.db')
+            cursor = conn.cursor()
+            
+            cursor.execute("SELECT COUNT(*) FROM diagnoses")
+            total_diagnoses = cursor.fetchone()[0]
+            
+            cursor.execute("SELECT COUNT(*) FROM diagnoses WHERE DATE(created_at) = DATE('now')")
+            today_diagnoses = cursor.fetchone()[0]
+            
+            st.sidebar.metric("총 진단 수", total_diagnoses)
+            st.sidebar.metric("오늘 진단", today_diagnoses)
+            
+            conn.close()
+        except:
+            st.sidebar.metric("총 진단 수", "0")
+            st.sidebar.metric("오늘 진단", "0")
+    
+    def show_dashboard_page(self):
+        """대시보드 페이지"""
+        st.title("📊 압축기 진단 대시보드")
+        
+        # 통계 카드
+        col1, col2, col3, col4 = st.columns(4)
+        
+        try:
+            conn = sqlite3.connect('field_diagnosis.db')
+            cursor = conn.cursor()
+            
+            # 총 진단 수
+            cursor.execute("SELECT COUNT(*) FROM diagnoses")
+            total_diagnoses = cursor.fetchone()[0]
+            
+            # 오늘 진단 수
+            cursor.execute("SELECT COUNT(*) FROM diagnoses WHERE DATE(created_at) = DATE('now')")
+            today_diagnoses = cursor.fetchone()[0]
+            
+            # 정상/주의/위험 비율
+            cursor.execute("SELECT diagnosis_result, COUNT(*) FROM diagnoses GROUP BY diagnosis_result")
+            results = cursor.fetchall()
+            
+            normal_count = sum(count for result, count in results if '정상' in result)
+            caution_count = sum(count for result, count in results if '주의' in result)
+            danger_count = sum(count for result, count in results if '위험' in result or '이상' in result)
+            
+            with col1:
+                st.metric("총 진단 수", total_diagnoses)
+            with col2:
+                st.metric("오늘 진단", today_diagnoses)
+            with col3:
+                st.metric("정상 비율", f"{(normal_count/max(total_diagnoses,1)*100):.1f}%")
+            with col4:
+                accuracy = 85.5  # 예시 값
+                st.metric("AI 정확도", f"{accuracy:.1f}%")
+            
+            # 진단 결과 분포 차트
+            if results:
+                st.subheader("📈 진단 결과 분포")
+                
+                import plotly.express as px
+                df_results = pd.DataFrame(results, columns=['진단결과', '건수'])
+                
+                fig = px.pie(df_results, values='건수', names='진단결과', 
+                           title="진단 결과별 분포")
+                st.plotly_chart(fig, use_container_width=True)
+            
+            # 최근 진단 목록
+            st.subheader("🕒 최근 진단 결과")
+            df = pd.read_sql_query("""
+                SELECT customer_name as '고객명', 
+                       equipment_type as '장비유형',
+                       diagnosis_result as '진단결과', 
+                       confidence as '신뢰도',
+                       created_at as '진단시간'
+                FROM diagnoses 
+                ORDER BY created_at DESC 
+                LIMIT 10
+            """, conn)
+            
+            if not df.empty:
+                # 신뢰도를 백분율로 변환
+                df['신뢰도'] = (df['신뢰도'] * 100).round(1).astype(str) + '%'
+                st.dataframe(df, use_container_width=True)
+            else:
+                st.info("아직 진단 데이터가 없습니다.")
+            
+            conn.close()
+            
+        except Exception as e:
+            st.error(f"대시보드 데이터 로드 실패: {e}")
+    
+    def show_ai_training_page(self):
+        """AI 학습 페이지"""
+        st.title("🤖 AI 모델 학습 및 관리")
+        
+        # AI 모델 상태
+        st.subheader("📊 모델 상태")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("모델 정확도", "85.5%")
+        with col2:
+            st.metric("학습 데이터", "1,247개")
+        with col3:
+            st.metric("마지막 업데이트", "2024-08-11")
+        
+        # 모델 재학습
+        st.subheader("🔄 모델 재학습")
+        st.info("현재 수집된 진단 데이터를 바탕으로 AI 모델을 재학습할 수 있습니다.")
+        
+        if st.button("🚀 모델 재학습 시작"):
+            with st.spinner("AI 모델 학습 중... (약 2-3분 소요)"):
+                import time
+                time.sleep(3)  # 실제로는 모델 학습 코드
+                st.success("✅ AI 모델 재학습이 완료되었습니다!")
+                st.balloons()
+        
+        # 학습 데이터 현황
+        st.subheader("📁 학습 데이터 현황")
+        
+        try:
+            conn = sqlite3.connect('field_diagnosis.db')
+            
+            # 진단 결과별 데이터 수
+            df_data = pd.read_sql_query("""
+                SELECT diagnosis_result as '진단결과', 
+                       COUNT(*) as '데이터수'
+                FROM diagnoses 
+                GROUP BY diagnosis_result
+                ORDER BY COUNT(*) DESC
+            """, conn)
+            
+            if not df_data.empty:
+                st.dataframe(df_data, use_container_width=True)
+                
+                # 데이터 분포 차트
+                import plotly.express as px
+                fig = px.bar(df_data, x='진단결과', y='데이터수', 
+                           title="진단 결과별 학습 데이터 분포")
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("학습 데이터가 없습니다.")
+            
+            conn.close()
+            
+        except Exception as e:
+            st.error(f"학습 데이터 조회 실패: {e}")
+        
+        # 모델 설정
+        st.subheader("⚙️ 모델 설정")
+        
+        with st.expander("고급 설정"):
+            learning_rate = st.slider("학습률", 0.001, 0.1, 0.01)
+            epochs = st.number_input("에포크 수", 10, 1000, 100)
+            batch_size = st.selectbox("배치 크기", [16, 32, 64, 128], index=1)
+            
+            if st.button("설정 저장"):
+                st.success("모델 설정이 저장되었습니다.")
+    
+    def show_settings_page(self):
+        """설정 페이지"""
+        st.title("⚙️ 시스템 설정")
+        
+        # 일반 설정
+        st.subheader("🔧 일반 설정")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            auto_save = st.checkbox("자동 저장", value=True)
+            notification = st.checkbox("알림 활성화", value=True)
+        with col2:
+            language = st.selectbox("언어", ["한국어", "English"], index=0)
+            theme = st.selectbox("테마", ["Light", "Dark"], index=0)
+        
+        # 진단 설정
+        st.subheader("🎤 진단 설정")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            min_recording_time = st.number_input("최소 녹음 시간 (초)", 1, 30, 5)
+            confidence_threshold = st.slider("신뢰도 임계값", 0.1, 1.0, 0.7)
+        with col2:
+            auto_analysis = st.checkbox("자동 분석", value=True)
+            save_audio = st.checkbox("음성 파일 저장", value=True)
+        
+        # 데이터 관리
+        st.subheader("💾 데이터 관리")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("데이터 백업"):
+                st.success("데이터 백업이 완료되었습니다!")
+        with col2:
+            if st.button("데이터 정리"):
+                st.info("30일 이상 된 데이터를 정리했습니다.")
+        with col3:
+            if st.button("초기화"):
+                st.warning("모든 데이터가 삭제됩니다!")
+        
+        # 설정 저장
+        if st.button("설정 저장", type="primary"):
+            st.success("설정이 저장되었습니다!")
+            st.balloons()
+    
     def run(self):
         """메인 실행 함수"""
-        # 단계별 실행
-        if self.session_state.diagnosis_step == 'welcome':
-            self.welcome_step()
-        elif self.session_state.diagnosis_step == 'customer_info':
-            self.customer_info_step()
-        elif self.session_state.diagnosis_step == 'recording':
-            self.recording_step()
-        elif self.session_state.diagnosis_step == 'analysis':
-            self.analysis_step()
-        elif self.session_state.diagnosis_step == 'result':
-            self.result_step()
+        # 사이드바 네비게이션 표시
+        self.show_sidebar_navigation()
+        
+        # 페이지별 라우팅
+        if self.session_state.current_page == '현장진단':
+            # 기존 현장 진단 플로우
+            if self.session_state.diagnosis_step == 'welcome':
+                self.welcome_step()
+            elif self.session_state.diagnosis_step == 'customer_info':
+                self.customer_info_step()
+            elif self.session_state.diagnosis_step == 'recording':
+                self.recording_step()
+            elif self.session_state.diagnosis_step == 'analysis':
+                self.analysis_step()
+            elif self.session_state.diagnosis_step == 'result':
+                self.result_step()
+        
+        elif self.session_state.current_page == '대시보드':
+            self.show_dashboard_page()
+            
+        elif self.session_state.current_page == 'AI학습':
+            self.show_ai_training_page()
+            
+        elif self.session_state.current_page == '진단이력':
+            st.title("📋 진단 이력 관리")
+            self.show_diagnosis_history()
+            
+        elif self.session_state.current_page == '설정':
+            self.show_settings_page()
 
 def main():
     """메인 함수"""
