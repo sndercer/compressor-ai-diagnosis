@@ -1,138 +1,62 @@
-# 압축기 진단 시스템 - Git 무시 파일
-
-# ===== Python 관련 =====
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# ===== 가상환경 =====
-.env
-.venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
-Lib/
-Scripts/
-pyvenv.cfg
 
-# ===== IDE 및 에디터 =====
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
-Thumbs.db
-
-# ===== 로그 파일 =====
-*.log
-logs/
-*.out
-
-# ===== 데이터베이스 =====
+# Database files
 *.db
 *.sqlite
 *.sqlite3
-database.db
-compressor_system.db
 
-# ===== 업로드된 파일 =====
-uploads/
-!uploads/.gitkeep
-temp/
-tmp/
+# Log files
+*.log
 
-# ===== AI 모델 파일 =====
-models/
-!models/.gitkeep
-*.pkl
-*.joblib
-*.h5
-*.pt
-*.pth
+# Temporary files
+*.tmp
+temp_*
 
-# ===== 백업 파일 =====
-backups/
-!backups/.gitkeep
-*.backup
-*.bak
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
 
-# ===== 환경 설정 =====
+# IDE files
+.vscode/
+.idea/
+*.pyc
+
+# Environment variables
 .env
-.env.local
-.env.development
-.env.test
-.env.production
-config.py
-secret_config.py
+*.env
 
-# ===== Streamlit 관련 =====
-.streamlit/secrets.toml
-.streamlit/config.toml
+# Streamlit
+.streamlit/
 
-# ===== Docker 관련 =====
-.dockerignore
+# Audio uploads and reports
+uploads/*
+reports/*
+field_uploads/*
+!uploads/.gitkeep
+!reports/.gitkeep
+!field_uploads/.gitkeep
 
-# ===== 테스트 관련 =====
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.nox/
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
+# Test files
+test_*
+*_test.*
+manual_*
+inline_*
+black_*
+simple_*
+direct_*
 
-# ===== 문서화 =====
-docs/_build/
-site/
-
-# ===== 압축 파일 =====
-*.zip
-*.tar.gz
-*.rar
-*.7z
-
-# ===== 시스템 파일 =====
-.cache/
-.npm
-.yarn-integrity
-node_modules/
-
-# ===== 기타 =====
-*.pid
-*.seed
-*.pid.lock
-.nyc_output
-.grunt
-bower_components
-*.tgz
-
-# ===== 프로덕션 관련 =====
-nginx.conf
-ssl/
-certificates/
-
-
+# Backup files
+backup_*
+*.bak
